@@ -10,7 +10,7 @@ A Windows desktop app that reads student IDs and names from columns A and B, rea
 - App settings and OAuth token: `config\settings.json` and `config\token.json`
 - Python environment: `.venv\` (created by `setup.bat`)
 
-The app defaults to the project `output` folder. Existing PDFs are not overwritten. A local manifest prevents repeat downloads. The project-local config, logs, downloaded output, and virtual environment are excluded from Git.
+The app always writes PDFs and CSV reports to the project `output` folder; the destination is fixed in the app. Existing PDFs are not overwritten. A local manifest prevents repeat downloads. The project-local config, logs, downloaded output, and virtual environment are excluded from Git.
 
 ## Requirements and setup
 
