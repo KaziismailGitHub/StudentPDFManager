@@ -415,7 +415,7 @@ class DownloaderApp:
             self.config = {}
         workbook_default = self.config.get("workbook", str(DEFAULT_WORKBOOK))
         client_default = self.config.get("client_secret", "")
-        output_default = self.config.get("output_folder", str(DEFAULT_OUTPUT))
+        output_default = str(DEFAULT_OUTPUT)
         self.workbook_var = tk.StringVar(value=workbook_default)
         self.client_var = tk.StringVar(value=client_default)
         self.output_var = tk.StringVar(value=output_default)
@@ -452,10 +452,8 @@ class DownloaderApp:
         ttk.Entry(form, textvariable=self.client_var).grid(row=1, column=1, columnspan=2, sticky="ew", pady=5)
         self.client_browse_button = ttk.Button(form, text="Browse…", command=self.choose_client)
         self.client_browse_button.grid(row=1, column=3, padx=(8, 0), pady=5)
-        ttk.Label(form, text="Local download folder").grid(row=2, column=0, sticky="w", padx=(0, 10), pady=5)
-        ttk.Entry(form, textvariable=self.output_var).grid(row=2, column=1, columnspan=2, sticky="ew", pady=5)
-        self.output_browse_button = ttk.Button(form, text="Browse…", command=self.choose_output)
-        self.output_browse_button.grid(row=2, column=3, padx=(8, 0), pady=5)
+        ttk.Label(form, text="Download folder (fixed)").grid(row=2, column=0, sticky="w", padx=(0, 10), pady=5)
+        ttk.Entry(form, textvariable=self.output_var, state="readonly").grid(row=2, column=1, columnspan=3, sticky="ew", pady=5)
 
         buttons = ttk.Frame(main)
         buttons.pack(fill="x", pady=(14, 8))
@@ -504,11 +502,6 @@ class DownloaderApp:
         if path:
             self.client_var.set(path)
 
-    def choose_output(self) -> None:
-        path = filedialog.askdirectory(title="Choose a local Windows download folder", mustexist=False)
-        if path:
-            self.output_var.set(path)
-
     def refresh_batches(self, silent: bool = False) -> None:
         workbook_path = Path(self.workbook_var.get().strip()).expanduser()
         if not workbook_path.is_file():
@@ -534,7 +527,7 @@ class DownloaderApp:
         save_json(CONFIG_PATH, {
             "workbook": self.workbook_var.get().strip(),
             "client_secret": self.client_var.get().strip(),
-            "output_folder": self.output_var.get().strip(),
+            "output_folder": str(DEFAULT_OUTPUT),
         })
 
     def validate_inputs(self, require_workbook: bool = True) -> tuple[Path | None, Path, Path] | None:
@@ -548,14 +541,7 @@ class DownloaderApp:
         if not client_secret.is_file():
             messagebox.showerror(APP_NAME, "Choose your Google Drive OAuth desktop client JSON file.", parent=self.root)
             return None
-        output_value = self.output_var.get().strip()
-        if not output_value:
-            messagebox.showerror(APP_NAME, "Choose a local Windows download folder.", parent=self.root)
-            return None
-        output_root = Path(output_value).expanduser()
-        if not output_root.is_absolute() or str(output_root.drive).startswith("\\\\"):
-            messagebox.showerror(APP_NAME, f"Use an absolute local drive path such as {DEFAULT_OUTPUT}.", parent=self.root)
-            return None
+        output_root = DEFAULT_OUTPUT
         return workbook_path, client_secret, output_root
 
     def connect(self) -> None:
@@ -679,7 +665,6 @@ class DownloaderApp:
             self.workbook_browse_button,
             self.load_workbook_button,
             self.client_browse_button,
-            self.output_browse_button,
             self.connect_button,
             self.download_all_button,
             self.select_button,
@@ -689,8 +674,7 @@ class DownloaderApp:
         self.batch_combo.configure(state="readonly" if enabled else "disabled")
 
     def open_folder(self) -> None:
-        output_value = self.output_var.get().strip()
-        folder = Path(output_value).expanduser() if output_value else DEFAULT_OUTPUT
+        folder = DEFAULT_OUTPUT
         try:
             folder.mkdir(parents=True, exist_ok=True)
             os.startfile(str(folder))
@@ -713,4 +697,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
